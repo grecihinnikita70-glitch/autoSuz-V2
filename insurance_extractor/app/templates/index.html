@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Документы | Insurance Extractor{% endblock %}
+
+{% block content %}
+<section class="section section-muted">
+    <div class="content">
+        <h1>Договоры страхования</h1>
+
+        <form class="upload-form" method="post" enctype="multipart/form-data">
+            <label class="file-label" for="document">DOCX-файл договора</label>
+            <div class="upload-row">
+                <input id="document" name="document" type="file" accept=".docx" required>
+                <button type="submit">Загрузить</button>
+            </div>
+            <p class="file-name" data-file-name></p>
+        </form>
+    </div>
+</section>
+
+<section class="section">
+    <div class="content">
+        <h2>История загрузок</h2>
+
+        {% if documents %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                            <tr>
+                                <td>{{ document.original_filename }}</td>
+                                <td><span class="status">{{ document.status }}</span></td>
+                                <td>{{ document.created_at.strftime("%d.%m.%Y %H:%M") }} UTC</td>
+                                <td class="actions">
+                                    <a class="text-link" href="{{ url_for('main.document_detail', document_id=document.id) }}">Открыть</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty">Документы пока не загружены.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

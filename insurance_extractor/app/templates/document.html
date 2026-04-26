@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.original_filename }} | Insurance Extractor{% endblock %}
+
+{% block content %}
+<section class="section section-muted">
+    <div class="content">
+        <a class="back-link" href="{{ url_for('main.index') }}">Назад к истории</a>
+        <h1>{{ document.original_filename }}</h1>
+
+        <dl class="meta-list">
+            <div>
+                <dt>ID</dt>
+                <dd>{{ document.id }}</dd>
+            </div>
+            <div>
+                <dt>Статус</dt>
+                <dd>{{ document.status }}</dd>
+            </div>
+            <div>
+                <dt>Дата загрузки</dt>
+                <dd>{{ document.created_at.strftime("%d.%m.%Y %H:%M") }} UTC</dd>
+            </div>
+            <div>
+                <dt>Сохраненный файл</dt>
+                <dd>{{ document.stored_filename }}</dd>
+            </div>
+        </dl>
+    </div>
+</section>
+
+<section class="section">
+    <div class="content two-column">
+        <div>
+            <h2>Текст документа</h2>
+            {% if document.text_content %}
+                <pre class="text-preview">{{ document.text_content }}</pre>
+            {% else %}
+                <p class="empty">Текст не найден.</p>
+            {% endif %}
+        </div>
+
+        <aside class="fields-panel">
+            <h2>Извлеченные поля</h2>
+            <p class="empty">На первом этапе извлечение полей отключено.</p>
+        </aside>
+    </div>
+</section>
+{% endblock %}
