@@ -57,6 +57,16 @@ SQLite-база создается автоматически в папке `ins
 pytest
 ```
 
+## Debug DOCX parser
+
+Чтобы быстро проверить извлеченный текст из конкретного DOCX-файла:
+
+```bash
+python debug_parse_docx.py uploads/example.docx
+```
+
+Скрипт печатает первые 2000 символов `ParsedDocument.full_text`.
+
 ## Структура проекта
 
 ```text
@@ -82,6 +92,7 @@ insurance_extractor/
   instance/
   tests/
   pytest.ini
+  debug_parse_docx.py
   run.py
   requirements.txt
   README.md
