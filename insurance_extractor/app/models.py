@@ -11,6 +11,7 @@ class Document(db.Model):
     stored_filename = db.Column(db.String(255), nullable=False, unique=True)
     file_path = db.Column(db.String(500), nullable=False)
     text_content = db.Column(db.Text, nullable=True)
+    extraction_result_json = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), nullable=False, default="uploaded")
     created_at = db.Column(
         db.DateTime,

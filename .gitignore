@@ -10,3 +10,8 @@ uploads/
 instance/
 server.log
 server.err
+
+models/
+*.gguf
+*.bin
+*.safetensors

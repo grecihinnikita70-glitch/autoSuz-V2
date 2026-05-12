@@ -2,11 +2,22 @@ from pathlib import Path
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 from .config import Config
 
 
 db = SQLAlchemy()
+
+
+def ensure_lightweight_schema_updates():
+    """Apply tiny SQLite schema updates for the learning MVP."""
+    columns = db.session.execute(text("PRAGMA table_info(documents)")).fetchall()
+    column_names = {column[1] for column in columns}
+
+    if "extraction_result_json" not in column_names:
+        db.session.execute(text("ALTER TABLE documents ADD COLUMN extraction_result_json TEXT"))
+        db.session.commit()
 
 
 def create_app(config_class=Config):
@@ -28,5 +39,6 @@ def create_app(config_class=Config):
     # project without learning migrations first.
     with app.app_context():
         db.create_all()
+        ensure_lightweight_schema_updates()
 
     return app

@@ -3,47 +3,114 @@
 {% block title %}{{ document.original_filename }} | Insurance Extractor{% endblock %}
 
 {% block content %}
-<section class="section section-muted">
-    <div class="content">
-        <a class="back-link" href="{{ url_for('main.index') }}">Назад к истории</a>
-        <h1>{{ document.original_filename }}</h1>
+<section class="document-workspace">
+    <aside class="workspace-panel left-panel">
+        <a class="back-link" href="{{ url_for('main.index') }}">К истории</a>
 
-        <dl class="meta-list">
-            <div>
-                <dt>ID</dt>
-                <dd>{{ document.id }}</dd>
-            </div>
-            <div>
-                <dt>Статус</dt>
-                <dd>{{ document.status }}</dd>
-            </div>
-            <div>
-                <dt>Дата загрузки</dt>
-                <dd>{{ document.created_at.strftime("%d.%m.%Y %H:%M") }} UTC</dd>
-            </div>
-            <div>
-                <dt>Сохраненный файл</dt>
-                <dd>{{ document.stored_filename }}</dd>
-            </div>
-        </dl>
-    </div>
-</section>
+        <h2>Загрузка</h2>
+        <form class="upload-form compact-upload" method="post" action="{{ url_for('main.index') }}" enctype="multipart/form-data">
+            <label class="file-label" for="document">DOCX или PDF</label>
+            <input id="document" name="document" type="file" accept=".docx,.pdf" required>
+            <button type="submit">Загрузить</button>
+            <p class="file-name" data-file-name></p>
+        </form>
 
-<section class="section">
-    <div class="content two-column">
-        <div>
-            <h2>Текст документа</h2>
-            {% if document.text_content %}
-                <pre class="text-preview">{{ document.text_content }}</pre>
-            {% else %}
-                <p class="empty">Текст не найден.</p>
-            {% endif %}
+        <h2>История</h2>
+        <div class="history-list">
+            {% for item in documents %}
+                <a class="history-item {% if item.id == document.id %}is-active{% endif %}" href="{{ url_for('main.document_detail', document_id=item.id) }}">
+                    <span>{{ item.original_filename }}</span>
+                    <small>{{ item.created_at.strftime("%d.%m.%Y %H:%M") }} UTC</small>
+                </a>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <section class="workspace-panel center-panel">
+        <div class="document-heading">
+            <div>
+                <h1>{{ document.original_filename }}</h1>
+                <p class="muted">Загружен: {{ document.created_at.strftime("%d.%m.%Y %H:%M") }} UTC</p>
+            </div>
+            <button type="button" data-copy-all>Скопировать всё через Tab</button>
         </div>
 
-        <aside class="fields-panel">
-            <h2>Извлеченные поля</h2>
-            <p class="empty">На первом этапе извлечение полей отключено.</p>
-        </aside>
-    </div>
+        <textarea id="copy-all-text" hidden>{{ copy_all_text }}</textarea>
+
+        <h2>Извлечённые поля</h2>
+        <div class="fields-table-wrap">
+            <table class="fields-table">
+                <thead>
+                    <tr>
+                        <th>Поле</th>
+                        <th>Значение</th>
+                        <th>Метод</th>
+                        <th>Confidence</th>
+                        <th>Предупреждения</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field in field_rows %}
+                        <tr class="source-row" data-source-text="{{ field.source_text or '' }}">
+                            <td>{{ field.label }}</td>
+                            <td class="field-value">{{ field.value or "—" }}</td>
+                            <td>{{ field.method }}</td>
+                            <td>{{ "%.2f"|format(field.confidence) }}</td>
+                            <td>
+                                {% if field.warnings %}
+                                    <ul class="warnings-list">
+                                        {% for warning in field.warnings %}
+                                            <li>{{ warning }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="copy-button" data-copy-value="{{ field.value or '' }}">Скопировать</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Договоры залога/ипотеки</h2>
+        {% if pledge_fields %}
+            <div class="pledge-list">
+                {% for field in pledge_fields %}
+                    <div class="pledge-item source-row" data-source-text="{{ field.source_text or '' }}">
+                        <div>
+                            <strong>{{ field.value }}</strong>
+                            <span>{{ field.method }} · {{ "%.2f"|format(field.confidence) }}</span>
+                            {% if field.warnings %}
+                                <ul class="warnings-list">
+                                    {% for warning in field.warnings %}
+                                        <li>{{ warning }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="copy-button" data-copy-value="{{ field.value or '' }}">Скопировать</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty">Договоры залога/ипотеки не найдены.</p>
+        {% endif %}
+    </section>
+
+    <aside class="workspace-panel right-panel">
+        <h2>Текст документа</h2>
+        <p class="muted">Нажмите на поле в центре, чтобы подсветить исходный фрагмент.</p>
+        <p class="source-warning" data-source-warning hidden></p>
+        {% if document.text_content %}
+            <pre class="text-preview source-text-preview" data-document-text>{{ document.text_content }}</pre>
+        {% else %}
+            <p class="empty">Текст не найден.</p>
+        {% endif %}
+    </aside>
 </section>
 {% endblock %}
